@@ -31,7 +31,6 @@ setup(
     author='Richard O\'Dwyer',
     author_email='richard@richard.do',
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
-    long_description=readme,
     install_requires=install_requires,
     classifiers=[
         'Intended Audience :: Developers',
