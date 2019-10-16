@@ -3,7 +3,7 @@
 Release History
 ---------------
 
-0.9.19 (unreleased)
+0.9.19 (2019-10-16)
 ++++++++++++++++++
 
 - Python 3 support and bugfixes.
