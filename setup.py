@@ -1,48 +1,52 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-from distutils.core import setup
+from __future__ import absolute_import
+
 import os
+from codecs import open
 
+from setuptools import find_packages, setup
 
-def get_packages(package):
-    """
-    Return root package & all sub-packages.
-    """
-    return [dirpath
-            for dirpath, dirnames, filenames in os.walk(package)
-            if os.path.exists(os.path.join(dirpath, '__init__.py'))]
+# allow setup.py to be run from any path
+os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-def get_package_data(package):
-    """
-    Return all files under the root package, that are not in a
-    package themselves.
-    """
-    walk = [(dirpath.replace(package + os.sep, '', 1), filenames)
-            for dirpath, dirnames, filenames in os.walk(package)
-            if not os.path.exists(os.path.join(dirpath, '__init__.py'))]
+with open('requirements.txt') as f:
+    install_requires = f.read().splitlines()
 
-    filepaths = []
-    for base, filenames in walk:
-        filepaths.extend([os.path.join(base, filename)
-                          for filename in filenames])
-    return {package: filepaths}
+with open('README.rst', 'r', encoding='utf-8') as rm_file:
+    readme = rm_file.read()
+
+with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
+    history = hist_file.read()
 
 setup(
     name='mega.py',
     version='0.9.17',
-    packages=get_packages('mega'),
-    package_data=get_package_data('mega'),
+    packages=find_packages('src', exclude=('tests', )),
+    package_dir={'': 'src'},
+    include_package_data=True,
+    zip_safe=False,
     description='Python lib for the Mega.co.nz API',
     author='Richard O\'Dwyer',
     author_email='richard@richard.do',
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
-    long_description='https://github.com/richardasaurus/mega.py',
-    install_requires=['pycrypto', 'requests'],
+    long_description=readme + '\n\n' + history,
+    install_requires=install_requires,
     classifiers=[
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Topic :: Internet :: WWW/HTTP'
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Internet :: WWW/HTTP',
     ]
 )

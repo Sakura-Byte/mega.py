@@ -1,0 +1,13 @@
+README.rst
+setup.cfg
+setup.py
+src/mega/__init__.py
+src/mega/crypto.py
+src/mega/errors.py
+src/mega/mega.py
+src/mega.py.egg-info/PKG-INFO
+src/mega.py.egg-info/SOURCES.txt
+src/mega.py.egg-info/dependency_links.txt
+src/mega.py.egg-info/not-zip-safe
+src/mega.py.egg-info/requires.txt
+src/mega.py.egg-info/top_level.txt

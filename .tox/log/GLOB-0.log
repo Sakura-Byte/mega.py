@@ -1,0 +1,54 @@
+action: GLOB, msg: packaging
+cwd: /home/amnesia/dev/mega.py
+cmd: /home/amnesia/.pyenv/versions/3.7.4/envs/megapy/bin/python3.7 setup.py sdist --formats=zip --dist-dir /home/amnesia/dev/mega.py/.tox/dist
+running sdist
+running egg_info
+writing src/mega.py.egg-info/PKG-INFO
+writing dependency_links to src/mega.py.egg-info/dependency_links.txt
+writing requirements to src/mega.py.egg-info/requires.txt
+writing top-level names to src/mega.py.egg-info/top_level.txt
+reading manifest file 'src/mega.py.egg-info/SOURCES.txt'
+writing manifest file 'src/mega.py.egg-info/SOURCES.txt'
+running check
+warning: check: missing required meta-data: url
+
+creating mega.py-0.9.17
+creating mega.py-0.9.17/src
+creating mega.py-0.9.17/src/mega
+creating mega.py-0.9.17/src/mega.py.egg-info
+copying files to mega.py-0.9.17...
+copying README.rst -> mega.py-0.9.17
+copying setup.cfg -> mega.py-0.9.17
+copying setup.py -> mega.py-0.9.17
+copying src/mega/__init__.py -> mega.py-0.9.17/src/mega
+copying src/mega/crypto.py -> mega.py-0.9.17/src/mega
+copying src/mega/errors.py -> mega.py-0.9.17/src/mega
+copying src/mega/mega.py -> mega.py-0.9.17/src/mega
+copying src/mega.py.egg-info/PKG-INFO -> mega.py-0.9.17/src/mega.py.egg-info
+copying src/mega.py.egg-info/SOURCES.txt -> mega.py-0.9.17/src/mega.py.egg-info
+copying src/mega.py.egg-info/dependency_links.txt -> mega.py-0.9.17/src/mega.py.egg-info
+copying src/mega.py.egg-info/not-zip-safe -> mega.py-0.9.17/src/mega.py.egg-info
+copying src/mega.py.egg-info/requires.txt -> mega.py-0.9.17/src/mega.py.egg-info
+copying src/mega.py.egg-info/top_level.txt -> mega.py-0.9.17/src/mega.py.egg-info
+Writing mega.py-0.9.17/setup.cfg
+creating /home/amnesia/dev/mega.py/.tox/dist
+creating '/home/amnesia/dev/mega.py/.tox/dist/mega.py-0.9.17.zip' and adding 'mega.py-0.9.17' to it
+adding 'mega.py-0.9.17'
+adding 'mega.py-0.9.17/src'
+adding 'mega.py-0.9.17/README.rst'
+adding 'mega.py-0.9.17/setup.py'
+adding 'mega.py-0.9.17/PKG-INFO'
+adding 'mega.py-0.9.17/setup.cfg'
+adding 'mega.py-0.9.17/src/mega.py.egg-info'
+adding 'mega.py-0.9.17/src/mega'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/PKG-INFO'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/top_level.txt'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/dependency_links.txt'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/not-zip-safe'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/requires.txt'
+adding 'mega.py-0.9.17/src/mega.py.egg-info/SOURCES.txt'
+adding 'mega.py-0.9.17/src/mega/errors.py'
+adding 'mega.py-0.9.17/src/mega/mega.py'
+adding 'mega.py-0.9.17/src/mega/crypto.py'
+adding 'mega.py-0.9.17/src/mega/__init__.py'
+removing 'mega.py-0.9.17' (and everything under it)

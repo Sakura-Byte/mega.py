@@ -1,0 +1,12 @@
+-r requirements.txt
+pytest
+ipdb
+flake8
+pep8-naming
+autoflake
+mccabe
+yapf
+tox
+coverage
+pytest-cov
+zest.releaser
