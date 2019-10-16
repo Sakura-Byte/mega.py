@@ -24,7 +24,7 @@ local.properties
 htmlcov/
 # External tool builders
 .externalToolBuilders/
-
+**/*.egg-info
 # Locally stored "Eclipse launch configurations"
 *.launch
 
