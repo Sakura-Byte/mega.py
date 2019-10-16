@@ -1,9 +1,0 @@
-action: py37-normal, msg: getenv
-cwd: /home/amnesia/dev/mega.py/.tox
-cmd: /home/amnesia/.pyenv/versions/3.7.4/envs/megapy/bin/python3.7 -m virtualenv --no-download --python /home/amnesia/.pyenv/versions/3.7.4/envs/megapy/bin/python3.7 py37-normal
-Already using interpreter /home/amnesia/.pyenv/versions/3.7.4/envs/megapy/bin/python3.7
-Using base prefix '/home/amnesia/.pyenv/versions/3.7.4'
-New python executable in /home/amnesia/dev/mega.py/.tox/py37-normal/bin/python3.7
-Also creating executable in /home/amnesia/dev/mega.py/.tox/py37-normal/bin/python
-Installing setuptools, pip, wheel...
-done.

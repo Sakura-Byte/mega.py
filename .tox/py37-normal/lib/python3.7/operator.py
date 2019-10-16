@@ -1,1 +1,0 @@
-/home/amnesia/.pyenv/versions/3.7.4/lib/python3.7/operator.py
