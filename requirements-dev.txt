@@ -10,5 +10,6 @@ tox
 coverage
 pytest-cov
 zest.releaser
+setuptools
 twine
 wheel
