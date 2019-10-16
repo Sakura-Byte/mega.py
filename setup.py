@@ -14,11 +14,11 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 with open('requirements.txt') as f:
     install_requires = f.read().splitlines()
 
-with open('README.rst', 'r', encoding='utf-8') as rm_file:
-    readme = rm_file.read()
+# with open('README.rst', 'r', encoding='utf-8') as rm_file:
+#     readme = rm_file.read()
 
-with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
-    history = hist_file.read()
+# with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
+#     history = hist_file.read()
 
 setup(
     name='mega.py',
