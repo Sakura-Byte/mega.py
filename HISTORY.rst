@@ -6,7 +6,7 @@ Release History
 0.9.20 (unreleased)
 +++++++++++++++++++
 
-- Nothing changed yet.
+- Python 3 bugfix to ``upload`` method.
 
 
 0.9.19 (2019-10-16)

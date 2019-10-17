@@ -4,6 +4,7 @@ from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from Crypto.Util import Counter
 import os
+import sys
 import random
 import binascii
 import requests
@@ -12,9 +13,11 @@ from .errors import ValidationError, RequestError
 from .crypto import (
     a32_to_base64, encrypt_key, base64_url_encode, encrypt_attr, base64_to_a32,
     base64_url_decode, decrypt_attr, a32_to_str, get_chunks, str_to_a32,
-    decrypt_key, mpi_to_int, stringhash, prepare_key, make_id,
+    decrypt_key, mpi_to_int, stringhash, prepare_key, make_id, makebyte
 )
 import tempfile
+
+PYTHON2 = sys.version_info < (3, )
 
 
 class Mega(object):
@@ -90,11 +93,15 @@ class Mega(object):
 
             private_key = a32_to_str(rsa_private_key)
             self.rsa_private_key = [0, 0, 0, 0]
-
             for i in range(4):
-                l = (
-                    (ord(private_key[0]) * 256 + ord(private_key[1]) + 7) / 8
-                ) + 2
+                if PYTHON2:
+                    l = (
+                        (ord(private_key[0]) * 256 + ord(private_key[1]) + 7) / 8
+                    ) + 2
+                else:
+                    l = int(
+                        ((private_key[0]) * 256 + (private_key[1]) + 7) / 8
+                    ) + 2
                 self.rsa_private_key[i] = mpi_to_int(private_key[:l])
                 private_key = private_key[l:]
 
@@ -671,16 +678,23 @@ class Mega(object):
 
                 block = chunk[i:i + 16]
                 if len(block) % 16:
-                    block += '\0' * (16 - len(block) % 16)
+                    block += makebyte('\0' * (16 - len(block) % 16))
                 mac_str = mac_encryptor.encrypt(encryptor.encrypt(block))
 
                 # encrypt file and upload
                 chunk = aes.encrypt(chunk)
-                output_file = requests.post(
-                    ul_url + "/" + str(chunk_start),
-                    data=chunk,
-                    timeout=self.timeout
-                )
+                try:
+                    output_file = requests.post(
+                        ul_url + "/" + str(chunk_start),
+                        data=chunk,
+                        timeout=self.timeout
+                    )
+                except:
+                    output_file = requests.post(
+                        ul_url + "/" + str(chunk_start),
+                        data=chunk,
+                        timeout=self.timeout
+                    )
                 completion_file_handle = output_file.text
 
                 if self.options.get('verbose') is True:
