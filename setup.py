@@ -22,7 +22,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='mega.py',
-    version='0.9.20.dev0',
+    version='0.9.20',
     packages=find_packages('src', exclude=('tests', )),
     package_dir={'': 'src'},
     include_package_data=True,
