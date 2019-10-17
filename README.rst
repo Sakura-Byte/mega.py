@@ -172,7 +172,7 @@ M
 .. _`https://code.richard.do/explore/projects`: https://code.richard.do/explore/projects
 .. _`https://github.com/meganz/sdk`: https://github.com/meganz/sdk
 
-.. |Build Status| image:: https://travis-ci.org/richardasaurus/mega.py.png?branch=master
-   :target: https://travis-ci.org/richardasaurus/mega.py
+.. |Build Status| image:: https://travis-ci.org/richardARPANET/mega.py.png?branch=master
+   :target: https://travis-ci.org/richardARPANET/mega.py
 .. |Downloads| image:: https://pypip.in/d/mega.py/badge.png
    :target: https://crate.io/packages/mega.py/
