@@ -13,3 +13,4 @@ zest.releaser
 setuptools
 twine
 wheel
+rope
