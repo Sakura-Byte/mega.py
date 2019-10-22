@@ -75,10 +75,10 @@ class TestExport:
         # Upload a single file into a folder
         folder = mega.find(TEST_FOLDER)
         dest_node_id = folder[1]['h']
-        result = mega.upload(
+        mega.upload(
             __file__, dest=dest_node_id, dest_filename='test.py'
         )
-        path = f'{TEST_FOLDER}/test.py'
+        path = '{}/test.py'.format(TEST_FOLDER)
         assert mega.find(path)
 
         for _ in range(2):

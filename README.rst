@@ -3,12 +3,6 @@ a mirror of the primary remote located at
 `https://code.richard.do/explore/projects`_. Please direct issues and
 pull requests there.
 
-Deprecated
-==========
-
-Mega.py is now deprecated, please use the official SDK
-`https://github.com/meganz/sdk`_.
-
 I aim to write a wrapper for the SDK when i have the time to do so.
 
 --------------

@@ -1,6 +1,8 @@
 import re
+import time
 import json
 import secrets
+from pathlib import Path
 import hashlib
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
@@ -114,7 +116,8 @@ class Mega(object):
             for i in range(4):
                 if PYTHON2:
                     l = (
-                        (ord(private_key[0]) * 256 + ord(private_key[1]) + 7) / 8
+                        (ord(private_key[0]) * 256 +
+                         ord(private_key[1]) + 7) / 8
                     ) + 2
                 else:
                     l = int(
@@ -155,6 +158,9 @@ class Mega(object):
         )
         json_resp = json.loads(req.text)
         if isinstance(json_resp, int):
+            if json_resp == -3:
+                time.sleep(0.2)
+                return self._api_request(data=data)
             raise RequestError(json_resp)
         return json_resp[0]
 
@@ -289,7 +295,6 @@ class Mega(object):
         """
         Return file object from given filename
         """
-        from pathlib import Path
         path = Path(filename)
         filename = path.name
         files = self.get_files()
@@ -300,12 +305,10 @@ class Mega(object):
                 parent_node_id = self.find_path_descriptor(parent_dir_name)
                 if (
                     filename and parent_node_id and
-                    file[1]['a'] and file[1]['a']['n'] == filename
-                    and parent_node_id == file[1]['p']
+                    file[1]['a'] and file[1]['a']['n'] == filename and
+                    parent_node_id == file[1]['p']
                 ):
                     return file
-            # if not isinstance(file[1]['a'], dict):
-            #     continue
             if (
                 filename and
                 file[1]['a'] and file[1]['a']['n'] == filename
@@ -577,10 +580,6 @@ class Mega(object):
             except (RequestError, KeyError):
                 pass
 
-        user_id = folder[1]['u']
-        user_pub_key = self._api_request({'a': 'uk', 'u': user_id})['pubk']
-        node_key = folder[1]['k']
-
         master_key_cipher = AES.new(a32_to_str(self.master_key), AES.MODE_ECB)
         ha = base64_url_encode(
             master_key_cipher.encrypt(folder[1]['h'] + folder[1]['h'])
@@ -590,6 +589,7 @@ class Mega(object):
         ok = base64_url_encode(master_key_cipher.encrypt(share_key))
 
         share_key_cipher = AES.new(share_key, AES.MODE_ECB)
+        node_key = folder[1]['k']
         encrypted_node_key = base64_url_encode(
             share_key_cipher.encrypt(a32_to_str(node_key))
         )
@@ -597,21 +597,18 @@ class Mega(object):
         node_id = folder[1]['h']
         request_body = [
             {
-            'a': 's2',
-            'n': node_id,
-            's': [{
-                'u': 'EXP',
-                'r': 0
-            }],
-            'i': self.request_id,
-            'ok': ok,
-            'ha': ha,
-            'cr': [
-                [node_id],
-                [node_id],
-                [0, 0, encrypted_node_key]
-            ]
-        }]
+                'a': 's2',
+                'n': node_id,
+                's': [{
+                    'u': 'EXP',
+                    'r': 0
+                }],
+                'i': self.request_id,
+                'ok': ok,
+                'ha': ha,
+                'cr': [[node_id], [node_id], [0, 0, encrypted_node_key]]
+            }
+        ]
         self._api_request(request_body)
         nodes = self.get_files()
         link = self.get_folder_link(nodes[node_id])
@@ -792,18 +789,11 @@ class Mega(object):
 
                 # encrypt file and upload
                 chunk = aes.encrypt(chunk)
-                try:
-                    output_file = requests.post(
-                        ul_url + "/" + str(chunk_start),
-                        data=chunk,
-                        timeout=self.timeout
-                    )
-                except:
-                    output_file = requests.post(
-                        ul_url + "/" + str(chunk_start),
-                        data=chunk,
-                        timeout=self.timeout
-                    )
+                output_file = requests.post(
+                    ul_url + "/" + str(chunk_start),
+                    data=chunk,
+                    timeout=self.timeout
+                )
                 completion_file_handle = output_file.text
 
                 if self.options.get('verbose') is True:
@@ -876,7 +866,7 @@ class Mega(object):
         # update attributes
         data = self._api_request(
             {
-                'a':'p',
+                'a': 'p',
                 't': dest,
                 'n': [
                     {
