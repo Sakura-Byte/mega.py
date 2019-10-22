@@ -1,6 +1,6 @@
 **NOTICE**: If you're reading this on GitHub.com please be aware this is
 a mirror of the primary remote located at
-`https://code.richard.do/explore/projects`_. Please direct issues and
+`https://code.richard.do/richardARPANET/mega.py`_. Please direct issues and
 pull requests there.
 
 I aim to write a wrapper for the SDK when i have the time to do so.
