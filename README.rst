@@ -151,6 +151,17 @@ Create a folder
 .. code:: python
 
    m.create_folder('new_folder')
+   m.create_folder('new_folder/sub_folder/subsub_folder')
+
+Returns a dict of folder node name and node_id, e.g.
+
+.. code:: python
+
+    {
+      'new_folder': 'qpFhAYwA',
+      'sub_folder': '2pdlmY4Z',
+      'subsub_folder': 'GgMFCKLZ'
+    }
 
 Rename a file or a folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -160,7 +171,7 @@ Rename a file or a folder
    file = m.find('myfile.doc')
    m.rename(file, 'my_file.doc')
 
-M
+
 ~
 
 .. _`https://code.richard.do/explore/projects`: https://code.richard.do/explore/projects

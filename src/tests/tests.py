@@ -1,4 +1,5 @@
 import random
+from pathlib import Path
 import os
 
 import pytest
@@ -10,16 +11,20 @@ TEST_PUBLIC_URL = (
     'https://mega.nz/#!hYVmXKqL!r0d0-WRnFwulR_shhuEDwrY1Vo103-am1MyUy8oV6Ps'
 )
 TEST_FILE = os.path.basename(__file__)
-TEST_FOLDER = 'mega.py_testfolder_{0}'.format(random.random())
 
 
 @pytest.fixture
-def mega():
+def folder_name():
+    return 'mega.py_testfolder_{0}'.format(random.random())
+
+
+@pytest.fixture
+def mega(folder_name):
     mega_ = Mega()
     mega_.login(email=os.environ['EMAIL'], password=os.environ['PASS'])
-    node = mega_.create_folder(TEST_FOLDER)
+    created_nodes = mega_.create_folder(folder_name)
     yield mega_
-    node_id = node['f'][0]['h']
+    node_id = next(iter(created_nodes.values()))
     mega_.destroy(node_id)
 
 
@@ -60,25 +65,39 @@ def test_get_link(mega):
 
 class TestExport:
 
-    def test_export_folder(self, mega):
+    def test_export_folder(self, mega, folder_name):
         public_url = None
         for _ in range(2):
-            result_public_share_url = mega.export(TEST_FOLDER)
+            result_public_share_url = mega.export(folder_name)
 
             if not public_url:
                 public_url = result_public_share_url
-
             assert result_public_share_url.startswith('https://mega.co.nz/#F!')
             assert result_public_share_url == public_url
 
-    def test_export_single_file(self, mega):
+    def test_export_folder_within_folder(self, mega, folder_name):
+        folder_path = Path(folder_name) / 'subdir' / 'anothersubdir'
+        mega.create_folder(name=folder_path)
+
+        result_public_share_url = mega.export(path=folder_path)
+
+        assert result_public_share_url.startswith('https://mega.co.nz/#F!')
+
+    def test_export_folder_using_node_id(self, mega, folder_name):
+        node_id = mega.find(folder_name)[0]
+
+        result_public_share_url = mega.export(node_id=node_id)
+
+        assert result_public_share_url.startswith('https://mega.co.nz/#F!')
+
+    def test_export_single_file(self, mega, folder_name):
         # Upload a single file into a folder
-        folder = mega.find(TEST_FOLDER)
+        folder = mega.find(folder_name)
         dest_node_id = folder[1]['h']
         mega.upload(
             __file__, dest=dest_node_id, dest_filename='test.py'
         )
-        path = '{}/test.py'.format(TEST_FOLDER)
+        path = '{}/test.py'.format(folder_name)
         assert mega.find(path)
 
         for _ in range(2):
@@ -94,20 +113,35 @@ def test_import_public_url(mega):
     assert isinstance(resp, int)
 
 
-def test_create_folder(mega):
-    resp = mega.create_folder(TEST_FOLDER)
-    assert isinstance(resp, dict)
+class TestCreateFolder:
+    def test_create_folder(self, mega, folder_name):
+        folder_names_and_node_ids = mega.create_folder(folder_name)
+
+        assert isinstance(folder_names_and_node_ids, dict)
+        assert len(folder_names_and_node_ids) == 1
+
+    def test_create_folder_with_sub_folders(self, mega, folder_name, mocker):
+        folder_names_and_node_ids = mega.create_folder(
+            name=(Path(folder_name) / 'subdir' / 'anothersubdir')
+        )
+
+        assert len(folder_names_and_node_ids) == 3
+        assert folder_names_and_node_ids == {
+            folder_name: mocker.ANY,
+            'subdir': mocker.ANY,
+            'anothersubdir': mocker.ANY,
+        }
 
 
-def test_rename(mega):
-    file = mega.find(TEST_FOLDER)
+def test_rename(mega, folder_name):
+    file = mega.find(folder_name)
     if file:
-        resp = mega.rename(file, TEST_FOLDER)
+        resp = mega.rename(file, folder_name)
         assert isinstance(resp, int)
 
 
-def test_delete_folder(mega):
-    folder_node = mega.find(TEST_FOLDER)[0]
+def test_delete_folder(mega, folder_name):
+    folder_node = mega.find(folder_name)[0]
     resp = mega.delete(folder_node)
     assert isinstance(resp, int)
 

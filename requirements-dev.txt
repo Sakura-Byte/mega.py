@@ -14,3 +14,4 @@ setuptools
 twine
 wheel
 rope
+pytest-mock

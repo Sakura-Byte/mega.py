@@ -295,9 +295,11 @@ class Mega(object):
         """
         Return file object from given filename
         """
+        files = self.get_files()
+        if handle:
+            return files[handle]
         path = Path(filename)
         filename = path.name
-        files = self.get_files()
         parent_dir_name = path.parent.name
         for file in list(files.items()):
             parent_node_id = None
@@ -313,8 +315,6 @@ class Mega(object):
                 filename and
                 file[1]['a'] and file[1]['a']['n'] == filename
             ):
-                return file
-            if handle and file[1]['h'] == handle:
                 return file
 
     def get_files(self):
@@ -559,42 +559,49 @@ class Mega(object):
         )
 
     def _export_file(self, node):
+        node_data = self._node_data(node)
         self._api_request([
             {
                 'a': 'l',
-                'n': node[1]['h'],
+                'n': node_data['h'],
                 'i': self.request_id
             }
         ])
         return self.get_link(node)
 
-    def export(self, path):
-        self.get_files()
-        folder = self.find(path)
-        if folder[1]['t'] == 0:
-            return self._export_file(folder)
-        if folder:
+    def export(self, path=None, node_id=None):
+        nodes = self.get_files()
+        if node_id:
+            node = nodes[node_id]
+        else:
+            node = self.find(path)
+
+        node_data = self._node_data(node)
+        is_file_node = node_data['t'] == 0
+        if is_file_node:
+            return self._export_file(node)
+        if node:
             try:
                 # If already exported
-                return self.get_folder_link(folder)
+                return self.get_folder_link(node)
             except (RequestError, KeyError):
                 pass
 
         master_key_cipher = AES.new(a32_to_str(self.master_key), AES.MODE_ECB)
         ha = base64_url_encode(
-            master_key_cipher.encrypt(folder[1]['h'] + folder[1]['h'])
+            master_key_cipher.encrypt(node_data['h'] + node_data['h'])
         )
 
         share_key = secrets.token_bytes(16)
         ok = base64_url_encode(master_key_cipher.encrypt(share_key))
 
         share_key_cipher = AES.new(share_key, AES.MODE_ECB)
-        node_key = folder[1]['k']
+        node_key = node_data['k']
         encrypted_node_key = base64_url_encode(
             share_key_cipher.encrypt(a32_to_str(node_key))
         )
 
-        node_id = folder[1]['h']
+        node_id = node_data['h']
         request_body = [
             {
                 'a': 's2',
@@ -611,8 +618,7 @@ class Mega(object):
         ]
         self._api_request(request_body)
         nodes = self.get_files()
-        link = self.get_folder_link(nodes[node_id])
-        return link
+        return self.get_folder_link(nodes[node_id])
 
     def download_url(self, url, dest_path=None, dest_filename=None):
         """
@@ -847,14 +853,7 @@ class Mega(object):
         input_file.close()
         return data
 
-    def create_folder(self, name, dest=None):
-        # determine storage node
-        if dest is None:
-            # if none set, upload to cloud drive node
-            if not hasattr(self, 'root_id'):
-                self.get_files()
-            dest = self.root_id
-
+    def _mkdir(self, name, parent_node_id):
         # generate random aes key (128) for folder
         ul_key = [random.randint(0, 0xFFFFFFFF) for _ in range(6)]
 
@@ -867,7 +866,7 @@ class Mega(object):
         data = self._api_request(
             {
                 'a': 'p',
-                't': dest,
+                't': parent_node_id,
                 'n': [
                     {
                         'h': 'xxxxxxxx',
@@ -880,6 +879,33 @@ class Mega(object):
             }
         )
         return data
+
+    def _root_node_id(self):
+        if not hasattr(self, 'root_id'):
+            self.get_files()
+        return self.root_id
+
+    def create_folder(self, name, dest=None):
+        dirs = tuple(dir_name for dir_name in str(name).split('/') if dir_name)
+        folder_node_ids = {}
+        for idx, directory_name in enumerate(dirs):
+            existing_node_id = self.find_path_descriptor(directory_name)
+            if existing_node_id:
+                folder_node_ids[idx] = existing_node_id
+                continue
+            if idx == 0:
+                if dest is None:
+                    parent_node_id = self._root_node_id()
+                else:
+                    parent_node_id = dest
+            else:
+                parent_node_id = folder_node_ids[idx - 1]
+            created_node = self._mkdir(
+                name=directory_name, parent_node_id=parent_node_id
+            )
+            node_id = created_node['f'][0]['h']
+            folder_node_ids[idx] = node_id
+        return dict(zip(dirs, folder_node_ids.values()))
 
     def rename(self, file, new_name):
         file = file[1]
