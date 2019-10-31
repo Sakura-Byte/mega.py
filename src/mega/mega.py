@@ -261,7 +261,7 @@ class Mega(object):
                 shared_keys[s_item['u']][s_item['h']] = ok_dict[s_item['h']]
         self.shared_keys = shared_keys
 
-    def find_path_descriptor(self, path):
+    def find_path_descriptor(self, path, files=()):
         """
         Find descriptor of folder inside a path. i.e.: folder1/folder2/folder3
         Params:
@@ -271,7 +271,7 @@ class Mega(object):
         """
         paths = path.split('/')
 
-        files = self.get_files()
+        files = files or self.get_files()
         parent_desc = self.root_id
         found = False
         for foldername in paths:
@@ -304,7 +304,9 @@ class Mega(object):
         for file in list(files.items()):
             parent_node_id = None
             if parent_dir_name:
-                parent_node_id = self.find_path_descriptor(parent_dir_name)
+                parent_node_id = self.find_path_descriptor(
+                    parent_dir_name, files=files
+                )
                 if (
                     filename and parent_node_id and
                     file[1]['a'] and file[1]['a']['n'] == filename and
