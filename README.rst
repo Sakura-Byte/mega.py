@@ -116,6 +116,15 @@ Upload a file, and get its public link
    m.get_upload_link(file)
    # see mega.py for destination and filename options
 
+Export a file or folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+   public_exported_web_link = m.export('myfile.doc')
+   public_exported_web_link = m.export('my_mega_folder/my_sub_folder_to_share')
+   # e.g. https://mega.nz/#F!WlVl1CbZ!M3wmhwZDENMNUJoBsdzFng
+
 Fine a file or folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
