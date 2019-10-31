@@ -1,6 +1,5 @@
 **NOTICE**: If you're reading this on GitHub.com please be aware this is
-a mirror of the primary remote located at
-`https://code.richard.do/richardARPANET/mega.py`_. Please direct issues and
+a mirror of the primary remote located at https://code.richard.do/richardARPANET/mega.py_. Please direct issues and
 pull requests there.
 
 I aim to write a wrapper for the SDK when i have the time to do so.
@@ -192,7 +191,7 @@ Rename a file or a folder
 
 ~
 
-.. _`https://code.richard.do/explore/projects`: https://code.richard.do/explore/projects
+.. _`https://code.richard.do/richardARPANET/mega.py`: https://code.richard.do/richardARPANET/mega.py
 .. _`https://github.com/meganz/sdk`: https://github.com/meganz/sdk
 
 .. |Build Status| image:: https://travis-ci.org/richardARPANET/mega.py.png?branch=master
