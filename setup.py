@@ -14,11 +14,11 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 with open('requirements.txt') as f:
     install_requires = f.read().splitlines()
 
-# with open('README.rst', 'r', encoding='utf-8') as rm_file:
-#     readme = rm_file.read()
+with open('README.rst', 'r', encoding='utf-8') as rm_file:
+    readme = rm_file.read()
 
-# with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
-#     history = hist_file.read()
+with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
+    history = hist_file.read()
 
 setup(
     name='mega.py',
@@ -28,6 +28,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     description='Python lib for the Mega.co.nz API',
+    long_description=readme + '\n\n' + history,
     author='Richard O\'Dwyer',
     author_email='richard@richard.do',
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
@@ -36,13 +37,7 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',

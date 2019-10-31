@@ -1,5 +1,9 @@
 import re
+import time
 import json
+import secrets
+from pathlib import Path
+import hashlib
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from Crypto.Util import Counter
@@ -28,6 +32,7 @@ class Mega(object):
         self.sid = None
         self.sequence_num = random.randint(0, 0xFFFFFFFF)
         self.request_id = make_id(10)
+        self._trash_folder_node_id = None
 
         if options is None:
             options = {}
@@ -38,13 +43,31 @@ class Mega(object):
             self._login_user(email, password)
         else:
             self.login_anonymous()
+        self._trash_folder_node_id = self.get_node_by_type(4)[0]
         return self
 
     def _login_user(self, email, password):
-        password_aes = prepare_key(str_to_a32(password))
-        uh = stringhash(email, password_aes)
-        resp = self._api_request({'a': 'us', 'user': email, 'uh': uh})
-        # if numeric error code response
+        email = email.lower()
+        get_user_salt_resp = self._api_request({'a': 'us0', 'user': email})
+        user_salt = None
+        try:
+            user_salt = base64_to_a32(get_user_salt_resp['s'])
+        except KeyError:
+            # v1 user account
+            password_aes = prepare_key(str_to_a32(password))
+            user_hash = stringhash(email, password_aes)
+        else:
+            # v2 user account
+            pbkdf2_key = hashlib.pbkdf2_hmac(
+                hash_name='sha512',
+                password=password.encode(),
+                salt=a32_to_str(user_salt),
+                iterations=100000,
+                dklen=32
+            )
+            password_aes = str_to_a32(pbkdf2_key[:16])
+            user_hash = base64_url_encode(pbkdf2_key[-16:])
+        resp = self._api_request({'a': 'us', 'user': email, 'uh': user_hash})
         if isinstance(resp, int):
             raise RequestError(resp)
         self._login_process(resp, password_aes)
@@ -70,7 +93,6 @@ class Mega(object):
         )
 
         resp = self._api_request({'a': 'us', 'user': user})
-        # if numeric error code response
         if isinstance(resp, int):
             raise RequestError(resp)
         self._login_process(resp, password_key)
@@ -96,7 +118,8 @@ class Mega(object):
             for i in range(4):
                 if PYTHON2:
                     l = (
-                        (ord(private_key[0]) * 256 + ord(private_key[1]) + 7) / 8
+                        (ord(private_key[0]) * 256 +
+                         ord(private_key[1]) + 7) / 8
                     ) + 2
                 else:
                     l = int(
@@ -113,7 +136,6 @@ class Mega(object):
                     self.rsa_private_key[1]
                 )
             )
-
             sid = '%x' % rsa_decrypter.key._decrypt(encrypted_sid)
             sid = binascii.unhexlify('0' + sid if len(sid) % 2 else sid)
             self.sid = base64_url_encode(sid[:43])
@@ -135,21 +157,12 @@ class Mega(object):
             params=params,
             data=json.dumps(data),
             timeout=self.timeout,
-            headers={
-                'Origin':
-                'https://mega.nz',
-                'Referer':
-                'https://mega.nz/login',
-                'User-Agent': (
-                    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:69.0) '
-                    'Gecko/20100101 Firefox/69.0'
-                ),
-            }
         )
         json_resp = json.loads(req.text)
-
-        # if numeric error code response
         if isinstance(json_resp, int):
+            if json_resp == -3:
+                time.sleep(0.2)
+                return self._api_request(data=data)
             raise RequestError(json_resp)
         return json_resp[0]
 
@@ -163,9 +176,6 @@ class Mega(object):
             raise RequestError('Url key missing')
 
     def _process_file(self, file, shared_keys):
-        """
-        Process a file
-        """
         if file['t'] == 0 or file['t'] == 1:
             keys = dict(
                 keypart.split(':', 1)
@@ -194,6 +204,13 @@ class Mega(object):
                         key = keys[hkey]
                         key = decrypt_key(base64_to_a32(key), shared_key)
                         break
+            if file['h'] and file['h'] in shared_keys.get('EXP', ()):
+                shared_key = shared_keys['EXP'][file['h']]
+                encrypted_key = str_to_a32(
+                    base64_url_decode(file['k'].split(':')[-1])
+                )
+                key = decrypt_key(encrypted_key, shared_key)
+                file['shared_folder_key'] = shared_key
             if key is not None:
                 # file
                 if file['t'] == 0:
@@ -244,11 +261,9 @@ class Mega(object):
                 shared_keys[s_item['u']] = {}
             if s_item['h'] in ok_dict:
                 shared_keys[s_item['u']][s_item['h']] = ok_dict[s_item['h']]
+        self.shared_keys = shared_keys
 
-    ##########################################################################
-    # GET
-
-    def find_path_descriptor(self, path):
+    def find_path_descriptor(self, path, files=()):
         """
         Find descriptor of folder inside a path. i.e.: folder1/folder2/folder3
         Params:
@@ -258,14 +273,17 @@ class Mega(object):
         """
         paths = path.split('/')
 
-        files = self.get_files()
+        files = files or self.get_files()
         parent_desc = self.root_id
         found = False
         for foldername in paths:
             if foldername != '':
                 for file in files.items():
-                    if file[1]['a'] and file[1]['t'] and \
-                            file[1]['a']['n'] == foldername:
+                    if (
+                        file[1]['a'] and
+                        file[1]['t'] and
+                        file[1]['a']['n'] == foldername
+                    ):
                         if parent_desc == file[1]['p']:
                             parent_desc = file[0]
                             found = True
@@ -275,22 +293,49 @@ class Mega(object):
                     return None
         return parent_desc
 
-    def find(self, filename):
+    def find(self, filename=None, handle=None, exclude_deleted=False):
         """
         Return file object from given filename
         """
         files = self.get_files()
+        if handle:
+            return files[handle]
+        path = Path(filename)
+        filename = path.name
+        parent_dir_name = path.parent.name
         for file in list(files.items()):
-            if not isinstance(file[1]['a'], dict):
-                continue
-            if file[1]['a'] and file[1]['a']['n'] == filename:
+            parent_node_id = None
+            if parent_dir_name:
+                parent_node_id = self.find_path_descriptor(
+                    parent_dir_name, files=files
+                )
+                if (
+                    filename and parent_node_id and
+                    file[1]['a'] and file[1]['a']['n'] == filename and
+                    parent_node_id == file[1]['p']
+                ):
+                    if (
+                        exclude_deleted and
+                        self._trash_folder_node_id == file[1]['p']
+                    ):
+                        continue
+                    return file
+            if (
+                filename and
+                file[1]['a'] and file[1]['a']['n'] == filename
+            ):
+                if (
+                    exclude_deleted and
+                    self._trash_folder_node_id == file[1]['p']
+                ):
+                    continue
                 return file
 
     def get_files(self):
         """
         Get all files in account
         """
-        files = self._api_request({'a': 'f', 'c': 1})
+        files = self._api_request({'a': 'f', 'c': 1, 'r': 1})
         files_dict = {}
         shared_keys = {}
         self._init_shared_keys(files, shared_keys)
@@ -336,6 +381,31 @@ class Mega(object):
                 )
             decrypted_key = a32_to_base64(file['key'])
             return '{0}://{1}/#!{2}!{3}'.format(
+                self.schema, self.domain, public_handle, decrypted_key
+            )
+        else:
+            raise ValidationError('File id and key must be present')
+
+    def _node_data(self, node):
+        try:
+            return node[1]
+        except (IndexError, KeyError):
+            return node
+
+    def get_folder_link(self, file):
+        try:
+            file = file[1]
+        except (IndexError, KeyError):
+            pass
+        if 'h' in file and 'k' in file:
+            public_handle = self._api_request({'a': 'l', 'n': file['h']})
+            if public_handle == -11:
+                raise RequestError(
+                    "Can't get a public link from that file "
+                    "(is this a shared file?)"
+                )
+            decrypted_key = a32_to_base64(file['shared_folder_key'])
+            return '{0}://{1}/#F!{2}!{3}'.format(
                 self.schema, self.domain, public_handle, decrypted_key
             )
         else:
@@ -442,8 +512,6 @@ class Mega(object):
         if 'balance' in user_data:
             return user_data['balance']
 
-    ##########################################################################
-    # DELETE
     def delete(self, public_handle):
         """
         Delete a file by its public handle
@@ -491,8 +559,6 @@ class Mega(object):
                 post_list.append({"a": "d", "n": file, "i": self.request_id})
             return self._api_request(post_list)
 
-    ##########################################################################
-    # DOWNLOAD
     def download(self, file, dest_path=None, dest_filename=None):
         """
         Download a file by it's file object
@@ -505,6 +571,68 @@ class Mega(object):
             dest_filename=dest_filename,
             is_public=False
         )
+
+    def _export_file(self, node):
+        node_data = self._node_data(node)
+        self._api_request([
+            {
+                'a': 'l',
+                'n': node_data['h'],
+                'i': self.request_id
+            }
+        ])
+        return self.get_link(node)
+
+    def export(self, path=None, node_id=None):
+        nodes = self.get_files()
+        if node_id:
+            node = nodes[node_id]
+        else:
+            node = self.find(path)
+
+        node_data = self._node_data(node)
+        is_file_node = node_data['t'] == 0
+        if is_file_node:
+            return self._export_file(node)
+        if node:
+            try:
+                # If already exported
+                return self.get_folder_link(node)
+            except (RequestError, KeyError):
+                pass
+
+        master_key_cipher = AES.new(a32_to_str(self.master_key), AES.MODE_ECB)
+        ha = base64_url_encode(
+            master_key_cipher.encrypt(node_data['h'] + node_data['h'])
+        )
+
+        share_key = secrets.token_bytes(16)
+        ok = base64_url_encode(master_key_cipher.encrypt(share_key))
+
+        share_key_cipher = AES.new(share_key, AES.MODE_ECB)
+        node_key = node_data['k']
+        encrypted_node_key = base64_url_encode(
+            share_key_cipher.encrypt(a32_to_str(node_key))
+        )
+
+        node_id = node_data['h']
+        request_body = [
+            {
+                'a': 's2',
+                'n': node_id,
+                's': [{
+                    'u': 'EXP',
+                    'r': 0
+                }],
+                'i': self.request_id,
+                'ok': ok,
+                'ha': ha,
+                'cr': [[node_id], [node_id], [0, 0, encrypted_node_key]]
+            }
+        ]
+        self._api_request(request_body)
+        nodes = self.get_files()
+        return self.get_folder_link(nodes[node_id])
 
     def download_url(self, url, dest_path=None, dest_filename=None):
         """
@@ -631,8 +759,6 @@ class Mega(object):
 
         shutil.move(temp_output_file.name, dest_path + file_name)
 
-    ##########################################################################
-    # UPLOAD
     def upload(self, filename, dest=None, dest_filename=None):
         # determine storage node
         if dest is None:
@@ -683,18 +809,11 @@ class Mega(object):
 
                 # encrypt file and upload
                 chunk = aes.encrypt(chunk)
-                try:
-                    output_file = requests.post(
-                        ul_url + "/" + str(chunk_start),
-                        data=chunk,
-                        timeout=self.timeout
-                    )
-                except:
-                    output_file = requests.post(
-                        ul_url + "/" + str(chunk_start),
-                        data=chunk,
-                        timeout=self.timeout
-                    )
+                output_file = requests.post(
+                    ul_url + "/" + str(chunk_start),
+                    data=chunk,
+                    timeout=self.timeout
+                )
                 completion_file_handle = output_file.text
 
                 if self.options.get('verbose') is True:
@@ -748,14 +867,7 @@ class Mega(object):
         input_file.close()
         return data
 
-    def create_folder(self, name, dest=None):
-        # determine storage node
-        if dest is None:
-            # if none set, upload to cloud drive node
-            if not hasattr(self, 'root_id'):
-                self.get_files()
-            dest = self.root_id
-
+    def _mkdir(self, name, parent_node_id):
         # generate random aes key (128) for folder
         ul_key = [random.randint(0, 0xFFFFFFFF) for _ in range(6)]
 
@@ -767,10 +879,8 @@ class Mega(object):
         # update attributes
         data = self._api_request(
             {
-                'a':
-                'p',
-                't':
-                dest,
+                'a': 'p',
+                't': parent_node_id,
                 'n': [
                     {
                         'h': 'xxxxxxxx',
@@ -779,11 +889,37 @@ class Mega(object):
                         'k': encrypted_key
                     }
                 ],
-                'i':
-                self.request_id
+                'i': self.request_id
             }
         )
         return data
+
+    def _root_node_id(self):
+        if not hasattr(self, 'root_id'):
+            self.get_files()
+        return self.root_id
+
+    def create_folder(self, name, dest=None):
+        dirs = tuple(dir_name for dir_name in str(name).split('/') if dir_name)
+        folder_node_ids = {}
+        for idx, directory_name in enumerate(dirs):
+            existing_node_id = self.find_path_descriptor(directory_name)
+            if existing_node_id:
+                folder_node_ids[idx] = existing_node_id
+                continue
+            if idx == 0:
+                if dest is None:
+                    parent_node_id = self._root_node_id()
+                else:
+                    parent_node_id = dest
+            else:
+                parent_node_id = folder_node_ids[idx - 1]
+            created_node = self._mkdir(
+                name=directory_name, parent_node_id=parent_node_id
+            )
+            node_id = created_node['f'][0]['h']
+            folder_node_ids[idx] = node_id
+        return dict(zip(dirs, folder_node_ids.values()))
 
     def rename(self, file, new_name):
         file = file[1]
@@ -881,21 +1017,6 @@ class Mega(object):
                 }
             )
 
-    def get_contacts(self):
-        raise NotImplementedError()
-        # TODO implement this
-        # sn param below = maxaction var with function getsc() in mega.co.nz js
-        # seens to be the 'sn' attrib of the previous request response...
-        # requests goto /sc rather than
-
-        # req = requests.post(
-        # '{0}://g.api.{1}/sc'.format(self.schema, self.domain),
-        #     params={'sn': 'ZMxcQ_DmHnM', 'ssl': '1'},
-        #     data=json.dumps(None),
-        #     timeout=self.timeout)
-        # json_resp = json.loads(req.text)
-        # print json_resp
-
     def get_public_url_info(self, url):
         """
         Get size and name from a public url, dict returned
@@ -917,8 +1038,6 @@ class Mega(object):
         Get size and name of a public file
         """
         data = self._api_request({'a': 'g', 'p': file_handle, 'ssm': 1})
-
-        # if numeric error code response
         if isinstance(data, int):
             raise RequestError(data)
 

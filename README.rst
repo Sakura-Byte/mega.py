@@ -1,13 +1,7 @@
 **NOTICE**: If you're reading this on GitHub.com please be aware this is
 a mirror of the primary remote located at
-`https://code.richard.do/explore/projects`_. Please direct issues and
+`https://code.richard.do/richardARPANET/mega.py`_. Please direct issues and
 pull requests there.
-
-Deprecated
-==========
-
-Mega.py is now deprecated, please use the official SDK
-`https://github.com/meganz/sdk`_.
 
 I aim to write a wrapper for the SDK when i have the time to do so.
 
@@ -122,6 +116,24 @@ Upload a file, and get its public link
    m.get_upload_link(file)
    # see mega.py for destination and filename options
 
+Export a file or folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+   public_exported_web_link = m.export('myfile.doc')
+   public_exported_web_link = m.export('my_mega_folder/my_sub_folder_to_share')
+   # e.g. https://mega.nz/#F!WlVl1CbZ!M3wmhwZDENMNUJoBsdzFng
+
+Fine a file or folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+   folder = m.find('my_mega_folder')
+   # Excludes results which are in the Trash folder (i.e. deleted)
+   folder = m.find('my_mega_folder', exclude_deleted=True)
+
 Upload a file to a destination folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -157,6 +169,17 @@ Create a folder
 .. code:: python
 
    m.create_folder('new_folder')
+   m.create_folder('new_folder/sub_folder/subsub_folder')
+
+Returns a dict of folder node name and node_id, e.g.
+
+.. code:: python
+
+    {
+      'new_folder': 'qpFhAYwA',
+      'sub_folder': '2pdlmY4Z',
+      'subsub_folder': 'GgMFCKLZ'
+    }
 
 Rename a file or a folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -166,7 +189,7 @@ Rename a file or a folder
    file = m.find('myfile.doc')
    m.rename(file, 'my_file.doc')
 
-M
+
 ~
 
 .. _`https://code.richard.do/explore/projects`: https://code.richard.do/explore/projects

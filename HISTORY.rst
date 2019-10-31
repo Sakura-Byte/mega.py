@@ -6,7 +6,12 @@ Release History
 0.9.21 (unreleased)
 +++++++++++++++++++
 
-- Nothing changed yet.
+- Removes broken method ``get_contacts()``.
+- Adds support for login with a v2 Mega user account.
+- Adds ``export()`` method to share a file or folder, returning public share URL with key.
+- Adds code, message attrs to RequestError exception, makes message in raised exceptions include more details.
+- Alters ``create_folder()`` to accept a path including multiple sub directories, adds support to create them all (similar to 'mkdir -p' on unix systems).
+- Adds ``exclude_deleted=True`` optional arg to ``find()`` method, to exclude deleted nodes from results.
 
 
 0.9.20 (2019-10-17)
