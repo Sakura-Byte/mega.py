@@ -39,7 +39,7 @@ Install mega.py package
 .. code:: python
 
    #Run the following command, or run setup from the latest github source
-   sudo pip install mega.py
+   pip install mega.py
 
 .. _import-megapy:
 
