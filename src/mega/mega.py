@@ -32,6 +32,7 @@ class Mega(object):
         self.sid = None
         self.sequence_num = random.randint(0, 0xFFFFFFFF)
         self.request_id = make_id(10)
+        self._trash_folder_node_id = None
 
         if options is None:
             options = {}
@@ -42,6 +43,7 @@ class Mega(object):
             self._login_user(email, password)
         else:
             self.login_anonymous()
+        self._trash_folder_node_id = self.get_node_by_type(4)[0]
         return self
 
     def _login_user(self, email, password):
@@ -291,7 +293,7 @@ class Mega(object):
                     return None
         return parent_desc
 
-    def find(self, filename=None, handle=None):
+    def find(self, filename=None, handle=None, exclude_deleted=False):
         """
         Return file object from given filename
         """
@@ -312,11 +314,21 @@ class Mega(object):
                     file[1]['a'] and file[1]['a']['n'] == filename and
                     parent_node_id == file[1]['p']
                 ):
+                    if (
+                        exclude_deleted and
+                        self._trash_folder_node_id == file[1]['p']
+                    ):
+                        continue
                     return file
             if (
                 filename and
                 file[1]['a'] and file[1]['a']['n'] == filename
             ):
+                if (
+                    exclude_deleted and
+                    self._trash_folder_node_id == file[1]['p']
+                ):
+                    continue
                 return file
 
     def get_files(self):

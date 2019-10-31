@@ -97,7 +97,7 @@ class TestExport:
         mega.upload(
             __file__, dest=dest_node_id, dest_filename='test.py'
         )
-        path = '{}/test.py'.format(folder_name)
+        path = f'{folder_name}/test.py'
         assert mega.find(path)
 
         for _ in range(2):
@@ -131,6 +131,31 @@ class TestCreateFolder:
             'subdir': mocker.ANY,
             'anothersubdir': mocker.ANY,
         }
+
+
+class TestFind:
+
+    def test_find_file(self, mega, folder_name):
+        folder = mega.find(folder_name)
+        dest_node_id = folder[1]['h']
+        mega.upload(
+            __file__, dest=dest_node_id, dest_filename='test.py'
+        )
+        path = f'{folder_name}/test.py'
+
+        assert mega.find(path)
+
+    def test_path_not_found_returns_none(self, mega):
+        assert mega.find('not_found') is None
+
+    def test_exclude_deleted_files(self, mega, folder_name):
+        folder_node_id = mega.find(folder_name)[0]
+        assert mega.find(folder_name)
+
+        mega.delete(folder_node_id)
+
+        assert mega.find(folder_name)
+        assert not mega.find(folder_name, exclude_deleted=True)
 
 
 def test_rename(mega, folder_name):

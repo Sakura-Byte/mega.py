@@ -11,6 +11,7 @@ Release History
 - Adds ``export()`` method to share a file or folder, returning public share URL with key.
 - Adds code, message attrs to RequestError exception, makes message in raised exceptions include more details.
 - Alters ``create_folder()`` to accept a path including multiple sub directories, adds support to create them all (similar to 'mkdir -p' on unix systems).
+- Adds ``exclude_deleted=True`` optional arg to ``find()`` method, to exclude deleted nodes from results.
 
 
 0.9.20 (2019-10-17)

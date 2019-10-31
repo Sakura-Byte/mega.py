@@ -116,6 +116,15 @@ Upload a file, and get its public link
    m.get_upload_link(file)
    # see mega.py for destination and filename options
 
+Fine a file or folder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+   folder = m.find('my_mega_folder')
+   # Excludes results which are in the Trash folder (i.e. deleted)
+   folder = m.find('my_mega_folder', exclude_deleted=True)
+
 Upload a file to a destination folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
