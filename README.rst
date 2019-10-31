@@ -2,8 +2,6 @@
 a mirror of the primary remote located at https://code.richard.do/richardARPANET/mega.py_. Please direct issues and
 pull requests there.
 
-I aim to write a wrapper for the SDK when i have the time to do so.
-
 --------------
 
 .. _megapy:
