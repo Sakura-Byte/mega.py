@@ -3,7 +3,7 @@
 Release History
 ---------------
 
-1.0.0 (unreleased)
+1.0.0 (2019-10-31)
 +++++++++++++++++++
 
 - Removes broken method ``get_contacts()``.
