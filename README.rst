@@ -122,7 +122,7 @@ Export a file or folder
    public_exported_web_link = m.export('my_mega_folder/my_sub_folder_to_share')
    # e.g. https://mega.nz/#F!WlVl1CbZ!M3wmhwZDENMNUJoBsdzFng
 
-Fine a file or folder
+Find a file or folder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
