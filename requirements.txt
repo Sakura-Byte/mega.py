@@ -1,4 +1,4 @@
 requests>=0.10
 pycrypto
 pathlib==1.0.1
-python2-secrets==1.0.5
+tenacity>=5.1.5,<6.0.0

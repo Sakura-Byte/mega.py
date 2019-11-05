@@ -6,7 +6,7 @@ Release History
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- When a request fails due to EAGAIN response, retry with exp backoff up to 20 seconds.
 
 
 1.0.0 (2019-10-31)

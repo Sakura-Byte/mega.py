@@ -1,5 +1,4 @@
 import re
-import time
 import json
 import logging
 import secrets
@@ -15,6 +14,7 @@ import tempfile
 import shutil
 
 import requests
+from tenacity import retry, wait_exponential, retry_if_exception_type
 
 from .errors import ValidationError, RequestError
 from .crypto import (
@@ -139,6 +139,10 @@ class Mega:
             sid = binascii.unhexlify('0' + sid if len(sid) % 2 else sid)
             self.sid = base64_url_encode(sid[:43])
 
+    @retry(
+        retry=retry_if_exception_type(RuntimeError),
+        wait=wait_exponential(multiplier=1, min=1, max=20)
+    )
     def _api_request(self, data):
         params = {'id': self.sequence_num}
         self.sequence_num += 1
@@ -160,9 +164,9 @@ class Mega:
         json_resp = json.loads(req.text)
         if isinstance(json_resp, int):
             if json_resp == -3:
-                logger.info('Request failed, retrying...')
-                time.sleep(10)
-                return self._api_request(data=data)
+                msg = 'Request failed, retrying'
+                logger.info(msg)
+                raise RuntimeError(msg)
             raise RequestError(json_resp)
         return json_resp[0]
 
@@ -810,7 +814,9 @@ class Mega:
                         timeout=self.timeout
                     )
                     completion_file_handle = output_file.text
-                    logger.info('%s of %s uploaded', upload_progress, file_size)
+                    logger.info(
+                        '%s of %s uploaded', upload_progress, file_size
+                    )
             else:
                 output_file = requests.post(
                     ul_url + "/0", data='', timeout=self.timeout
@@ -843,6 +849,7 @@ class Mega:
                 {
                     'a': 'p',
                     't': dest,
+                    'i': self.request_id,
                     'n': [
                         {
                             'h': completion_file_handle,
@@ -919,9 +926,8 @@ class Mega:
         encrypted_key = a32_to_base64(
             encrypt_key(file['key'], self.master_key)
         )
-
         # update attributes
-        data = self._api_request(
+        return self._api_request(
             [
                 {
                     'a': 'a',
@@ -932,7 +938,6 @@ class Mega:
                 }
             ]
         )
-        return data
 
     def move(self, file_id, target):
         """
@@ -957,7 +962,7 @@ class Mega:
         # determine target_node_id
         if type(target) == int:
             target_node_id = str(self.get_node_by_type(target)[0])
-        elif type(target) in (str, str):
+        elif type(target) in (str, ):
             target_node_id = target
         else:
             file = target[1]
@@ -1042,9 +1047,7 @@ class Mega:
         unencrypted_attrs = decrypt_attr(base64_url_decode(data['at']), k)
         if not unencrypted_attrs:
             return None
-
         result = {'size': size, 'name': unencrypted_attrs['n']}
-
         return result
 
     def import_public_file(
@@ -1053,7 +1056,6 @@ class Mega:
         """
         Import the public file into user account
         """
-
         # Providing dest_node spare an API call to retrieve it.
         if dest_node is None:
             # Get '/Cloud Drive' folder no dest node specified
@@ -1071,13 +1073,10 @@ class Mega:
 
         encrypted_key = a32_to_base64(encrypt_key(key, self.master_key))
         encrypted_name = base64_url_encode(encrypt_attr({'n': dest_name}, k))
-
-        data = self._api_request(
+        return self._api_request(
             {
-                'a':
-                'p',
-                't':
-                dest_node['h'],
+                'a': 'p',
+                't': dest_node['h'],
                 'n': [
                     {
                         'ph': file_handle,
@@ -1088,4 +1087,3 @@ class Mega:
                 ]
             }
         )
-        return data
