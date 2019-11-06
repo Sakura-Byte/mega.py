@@ -56,8 +56,6 @@ Create an instance of Mega.py
 .. code:: python
 
    mega = Mega()
-   # add the verbose option for print output on some functions
-   mega = Mega({'verbose': True})
 
 Login to Mega
 ~~~~~~~~~~~~~
