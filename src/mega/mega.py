@@ -569,8 +569,8 @@ class Mega:
         Download a file by it's file object
         """
         self._download_file(
-            None,
-            None,
+            file_handle=None,
+            file_key=None,
             file=file[1],
             dest_path=dest_path,
             dest_filename=dest_filename,
@@ -647,7 +647,11 @@ class Mega:
         file_id = path[0]
         file_key = path[1]
         self._download_file(
-            file_id, file_key, dest_path, dest_filename, is_public=True
+            file_handle=file_id,
+            file_key=file_key,
+            dest_path=dest_path,
+            dest_filename=dest_filename,
+            is_public=True,
         )
 
     def _download_file(
