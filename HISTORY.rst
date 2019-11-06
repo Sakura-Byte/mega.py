@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.1 (unreleased)
+1.0.1 (2019-11-06)
 ------------------
 
 - When a request fails due to EAGAIN response, retry with exp backoff up to 20 seconds.
