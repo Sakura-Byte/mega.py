@@ -7,7 +7,9 @@ Release History
 ------------------
 
 - When a request fails due to EAGAIN response, retry with exp backoff up to 20 seconds.
+- Adds logging, removes print statements.
 - Replace pycrypto dependency with pycryptodome.
+- Removes Python 2 specific code.
 
 
 1.0.0 (2019-10-31)
