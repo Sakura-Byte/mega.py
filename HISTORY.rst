@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.2 (unreleased)
+1.0.2 (2019-11-07)
 ------------------
 
 - Reverts, "Replace pycrypto dependency with pycryptodome" as breaks login process.
