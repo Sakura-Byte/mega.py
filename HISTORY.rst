@@ -6,7 +6,7 @@ Release History
 1.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Reverts, "Replace pycrypto dependency with pycryptodome" as breaks login process.
 
 
 1.0.1 (2019-11-06)
