@@ -22,7 +22,7 @@ with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
 
 setup(
     name='mega.py',
-    version='1.0.3',
+    version='1.0.4.dev0',
     packages=find_packages('src', exclude=('tests', )),
     package_dir={'': 'src'},
     include_package_data=True,
