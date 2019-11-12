@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.3 (unreleased)
+1.0.3 (2019-11-12)
 ------------------
 
 - Fixes broken ``download`` method.
