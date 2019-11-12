@@ -568,7 +568,7 @@ class Mega:
         """
         Download a file by it's file object
         """
-        self._download_file(
+        return self._download_file(
             file_handle=None,
             file_key=None,
             file=file[1],
@@ -646,7 +646,7 @@ class Mega:
         path = self._parse_url(url).split('!')
         file_id = path[0]
         file_key = path[1]
-        self._download_file(
+        return self._download_file(
             file_handle=file_id,
             file_key=file_key,
             dest_path=dest_path,
@@ -694,7 +694,7 @@ class Mega:
             iv = file['iv']
             meta_mac = file['meta_mac']
 
-        # Seems to happens sometime... When  this occurs, files are
+        # Seems to happens sometime... When this occurs, files are
         # inaccessible also in the official also in the official web app.
         # Strangely, files can come back later.
         if 'g' not in file_data:
@@ -716,51 +716,53 @@ class Mega:
         else:
             dest_path += '/'
 
-        temp_output_file = tempfile.NamedTemporaryFile(
+        with tempfile.NamedTemporaryFile(
             mode='w+b', prefix='megapy_', delete=False
-        )
+        ) as temp_output_file:
+            k_str = a32_to_str(k)
+            counter = Counter.new(
+                128, initial_value=((iv[0] << 32) + iv[1]) << 64
+            )
+            aes = AES.new(k_str, AES.MODE_CTR, counter=counter)
 
-        k_str = a32_to_str(k)
-        counter = Counter.new(128, initial_value=((iv[0] << 32) + iv[1]) << 64)
-        aes = AES.new(k_str, AES.MODE_CTR, counter=counter)
+            mac_str = '\0' * 16
+            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str)
+            iv_str = a32_to_str([iv[0], iv[1], iv[0], iv[1]])
 
-        mac_str = '\0' * 16
-        mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str)
-        iv_str = a32_to_str([iv[0], iv[1], iv[0], iv[1]])
+            for chunk_start, chunk_size in get_chunks(file_size):
+                chunk = input_file.read(chunk_size)
+                chunk = aes.decrypt(chunk)
+                temp_output_file.write(chunk)
 
-        for chunk_start, chunk_size in get_chunks(file_size):
-            chunk = input_file.read(chunk_size)
-            chunk = aes.decrypt(chunk)
-            temp_output_file.write(chunk)
+                encryptor = AES.new(k_str, AES.MODE_CBC, iv_str)
+                for i in range(0, len(chunk) - 16, 16):
+                    block = chunk[i:i + 16]
+                    encryptor.encrypt(block)
 
-            encryptor = AES.new(k_str, AES.MODE_CBC, iv_str)
-            for i in range(0, len(chunk) - 16, 16):
+                # fix for files under 16 bytes failing
+                if file_size > 16:
+                    i += 16
+                else:
+                    i = 0
+
                 block = chunk[i:i + 16]
-                encryptor.encrypt(block)
+                if len(block) % 16:
+                    block += b'\0' * (16 - (len(block) % 16))
+                mac_str = mac_encryptor.encrypt(encryptor.encrypt(block))
 
-            # fix for files under 16 bytes failing
-            if file_size > 16:
-                i += 16
-            else:
-                i = 0
-
-            block = chunk[i:i + 16]
-            if len(block) % 16:
-                block += '\0' * (16 - (len(block) % 16))
-            mac_str = mac_encryptor.encrypt(encryptor.encrypt(block))
-
-            file_info = os.stat(temp_output_file.name)
-            logger.info('%s of %s downloaded', file_info.st_size, file_size)
-
-        file_mac = str_to_a32(mac_str)
-
-        temp_output_file.close()
-
-        # check mac integrity
-        if (file_mac[0] ^ file_mac[1], file_mac[2] ^ file_mac[3]) != meta_mac:
-            raise ValueError('Mismatched mac')
-
-        shutil.move(temp_output_file.name, dest_path + file_name)
+                file_info = os.stat(temp_output_file.name)
+                logger.info(
+                    '%s of %s downloaded', file_info.st_size, file_size
+                )
+            file_mac = str_to_a32(mac_str)
+            # check mac integrity
+            if (
+                file_mac[0] ^ file_mac[1], file_mac[2] ^ file_mac[3]
+            ) != meta_mac:
+                raise ValueError('Mismatched mac')
+            output_path = Path(dest_path + file_name)
+            shutil.move(temp_output_file.name, output_path)
+            return output_path
 
     def upload(self, filename, dest=None, dest_filename=None):
         # determine storage node

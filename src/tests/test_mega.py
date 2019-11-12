@@ -28,6 +28,17 @@ def mega(folder_name):
     mega_.destroy(node_id)
 
 
+@pytest.fixture
+def uploaded_file(mega, folder_name):
+    folder = mega.find(folder_name)
+    dest_node_id = folder[1]['h']
+    mega.upload(
+        __file__, dest=dest_node_id, dest_filename='test.py'
+    )
+    path = f'{folder_name}/test.py'
+    return mega.find(path)
+
+
 def test_mega(mega):
     assert isinstance(mega, Mega)
 
@@ -56,11 +67,9 @@ def test_get_files(mega):
     assert isinstance(files, dict)
 
 
-def test_get_link(mega):
-    file = mega.find(TEST_FILE)
-    if file:
-        link = mega.get_link(file)
-        assert isinstance(link, str)
+def test_get_link(mega, uploaded_file):
+    link = mega.get_link(uploaded_file)
+    assert isinstance(link, str)
 
 
 class TestExport:
@@ -171,18 +180,31 @@ def test_delete_folder(mega, folder_name):
     assert isinstance(resp, int)
 
 
-def test_delete(mega):
-    file = mega.find(TEST_FILE)
-    if file:
-        resp = mega.delete(file[0])
-        assert isinstance(resp, int)
+def test_delete(mega, uploaded_file):
+    resp = mega.delete(uploaded_file[0])
+    assert isinstance(resp, int)
 
 
-def test_destroy(mega):
-    file = mega.find(TEST_FILE)
-    if file:
-        resp = mega.destroy(file[0])
-        assert isinstance(resp, int)
+def test_destroy(mega, uploaded_file):
+    resp = mega.destroy(uploaded_file[0])
+    assert isinstance(resp, int)
+
+
+def test_download(mega, tmpdir, folder_name):
+    # Upload a single file into a folder
+    folder = mega.find(folder_name)
+    dest_node_id = folder[1]['h']
+    mega.upload(
+        __file__, dest=dest_node_id, dest_filename='test.py'
+    )
+    path = f'{folder_name}/test.py'
+    file = mega.find(path)
+
+    output_path = mega.download(
+        file=file, dest_path=tmpdir, dest_filename='test.py'
+    )
+
+    assert output_path.exists()
 
 
 def test_empty_trash(mega):
