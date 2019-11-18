@@ -141,7 +141,7 @@ class Mega:
 
     @retry(
         retry=retry_if_exception_type(RuntimeError),
-        wait=wait_exponential(multiplier=2, min=2, max=30)
+        wait=wait_exponential(multiplier=2, min=2, max=60)
     )
     def _api_request(self, data):
         params = {'id': self.sequence_num}

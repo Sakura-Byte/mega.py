@@ -6,7 +6,7 @@ Release History
 1.0.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Increase the wait time in between failed API request retries.
 
 
 1.0.4 (2019-11-18)
