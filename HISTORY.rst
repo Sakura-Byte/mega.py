@@ -3,10 +3,18 @@
 Release History
 ===============
 
-1.0.3 (unreleased)
+1.0.4 (unreleased)
 ------------------
 
 - Increase the wait time in between failed API request retries.
+
+
+1.0.3 (2019-11-12)
+------------------
+
+- Fixes broken ``download`` method.
+- Changes ``download`` and ``download_url`` methods to return the path to the downloaded file, previously returned ``None``.
+- Added LICENSE.
 
 
 1.0.2 (2019-11-07)
