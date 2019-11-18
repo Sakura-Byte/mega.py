@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.4 (unreleased)
+1.0.4 (2019-11-18)
 ------------------
 
 - Increase the wait time in between failed API request retries.
