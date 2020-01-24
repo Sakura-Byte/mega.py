@@ -1,4 +1,4 @@
 requests>=0.10
-pycrypto
+pycryptodome
 pathlib==1.0.1
 tenacity>=5.1.5,<6.0.0
