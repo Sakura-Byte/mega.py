@@ -130,12 +130,12 @@ class Mega:
             encrypted_sid = mpi_to_int(base64_url_decode(resp['csid']))
             rsa_decrypter = RSA.construct(
                 (
-                    self.rsa_private_key[0] * self.rsa_private_key[1], 0,
+                    self.rsa_private_key[0] * self.rsa_private_key[1], 257,
                     self.rsa_private_key[2], self.rsa_private_key[0],
                     self.rsa_private_key[1]
                 )
             )
-            sid = '%x' % rsa_decrypter.key._decrypt(encrypted_sid)
+            sid = '%x' % rsa_decrypter._decrypt(encrypted_sid)
             sid = binascii.unhexlify('0' + sid if len(sid) % 2 else sid)
             self.sid = base64_url_encode(sid[:43])
 
@@ -608,7 +608,7 @@ class Mega:
 
         master_key_cipher = AES.new(a32_to_str(self.master_key), AES.MODE_ECB)
         ha = base64_url_encode(
-            master_key_cipher.encrypt(node_data['h'] + node_data['h'])
+            master_key_cipher.encrypt(node_data['h'].encode("utf8") + node_data['h'].encode("utf8"))
         )
 
         share_key = secrets.token_bytes(16)
@@ -726,7 +726,7 @@ class Mega:
             aes = AES.new(k_str, AES.MODE_CTR, counter=counter)
 
             mac_str = '\0' * 16
-            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str)
+            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str.encode("utf8"))
             iv_str = a32_to_str([iv[0], iv[1], iv[0], iv[1]])
 
             for chunk_start, chunk_size in get_chunks(file_size):
@@ -789,7 +789,7 @@ class Mega:
             completion_file_handle = None
 
             mac_str = '\0' * 16
-            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str)
+            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str.encode("utf8"))
             iv_str = a32_to_str([ul_key[4], ul_key[5], ul_key[4], ul_key[5]])
             if file_size > 0:
                 for chunk_start, chunk_size in get_chunks(file_size):
