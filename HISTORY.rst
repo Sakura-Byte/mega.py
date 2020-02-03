@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.6 (unreleased)
+1.0.6 (2020-02-03)
 ------------------
 
 - Fixes RSA public exponent issue.
