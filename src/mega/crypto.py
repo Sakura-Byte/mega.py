@@ -106,6 +106,23 @@ def str_to_a32(b):
 def mpi_to_int(s):
     return int(binascii.hexlify(s[2:]), 16)
 
+def extended_gcd(a, b):
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = extended_gcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+def modular_inverse(a, m):
+    '''
+    Thank you Mart Bakhoff for this solution.
+    https://stackoverflow.com/a/9758173
+    '''
+    g, x, y = extended_gcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
 
 def base64_url_decode(data):
     data += '==' [(2 - len(data) * 3) % 4:]
