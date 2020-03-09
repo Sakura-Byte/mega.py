@@ -104,6 +104,11 @@ def str_to_a32(b):
 
 
 def mpi_to_int(s):
+    '''
+    A Multi-precision integer is encoded as a series of bytes in big-endian
+    order. The first two bytes are a header which tell the number of bits in
+    the integer. The rest of the bytes are the integer.
+    '''
     return int(binascii.hexlify(s[2:]), 16)
 
 def extended_gcd(a, b):

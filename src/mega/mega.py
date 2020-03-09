@@ -1,3 +1,4 @@
+import math
 import re
 import json
 import logging
@@ -119,13 +120,17 @@ class Mega:
             )
 
             private_key = a32_to_str(rsa_private_key)
+            # The private_key contains 4 MPI integers concatenated together.
             rsa_private_key = [0, 0, 0, 0]
             for i in range(4):
-                l = int(
-                    ((private_key[0]) * 256 + (private_key[1]) + 7) / 8
-                ) + 2
-                rsa_private_key[i] = mpi_to_int(private_key[:l])
-                private_key = private_key[l:]
+                # An MPI integer has a 2-byte header which describes the number
+                # of bits in the integer.
+                bitlength = (private_key[0] * 256) + private_key[1]
+                bytelength = math.ceil(bitlength / 8)
+                # Add 2 bytes to accommodate the MPI header
+                bytelength += 2
+                rsa_private_key[i] = mpi_to_int(private_key[:bytelength])
+                private_key = private_key[bytelength:]
 
             encrypted_sid = mpi_to_int(base64_url_decode(resp['csid']))
             rsa_decrypter = RSA.construct(
