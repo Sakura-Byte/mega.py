@@ -119,20 +119,20 @@ class Mega:
             )
 
             private_key = a32_to_str(rsa_private_key)
-            self.rsa_private_key = [0, 0, 0, 0]
+            rsa_private_key = [0, 0, 0, 0]
             for i in range(4):
                 l = int(
                     ((private_key[0]) * 256 + (private_key[1]) + 7) / 8
                 ) + 2
-                self.rsa_private_key[i] = mpi_to_int(private_key[:l])
+                rsa_private_key[i] = mpi_to_int(private_key[:l])
                 private_key = private_key[l:]
 
             encrypted_sid = mpi_to_int(base64_url_decode(resp['csid']))
             rsa_decrypter = RSA.construct(
                 (
-                    self.rsa_private_key[0] * self.rsa_private_key[1], 257,
-                    self.rsa_private_key[2], self.rsa_private_key[0],
-                    self.rsa_private_key[1]
+                    rsa_private_key[0] * rsa_private_key[1], 257,
+                    rsa_private_key[2], rsa_private_key[0],
+                    rsa_private_key[1]
                 )
             )
             sid = '%x' % rsa_decrypter._decrypt(encrypted_sid)
