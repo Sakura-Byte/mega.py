@@ -6,7 +6,7 @@ Release History
 1.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fix login by calculating public RSA exponent instead of hardcoding.
 
 
 1.0.6 (2020-02-03)
