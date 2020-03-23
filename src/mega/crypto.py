@@ -104,11 +104,11 @@ def str_to_a32(b):
 
 
 def mpi_to_int(s):
-    '''
+    """
     A Multi-precision integer is encoded as a series of bytes in big-endian
     order. The first two bytes are a header which tell the number of bits in
     the integer. The rest of the bytes are the integer.
-    '''
+    """
     return int(binascii.hexlify(s[2:]), 16)
 
 def extended_gcd(a, b):
@@ -119,10 +119,10 @@ def extended_gcd(a, b):
         return (g, x - (b // a) * y, y)
 
 def modular_inverse(a, m):
-    '''
+    """
     Thank you Mart Bakhoff for this solution.
     https://stackoverflow.com/a/9758173
-    '''
+    """
     g, x, y = extended_gcd(a, m)
     if g != 1:
         raise Exception('modular inverse does not exist')
