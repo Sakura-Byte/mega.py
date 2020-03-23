@@ -1,3 +1,4 @@
+import math
 import re
 import json
 import logging
@@ -20,7 +21,8 @@ from .errors import ValidationError, RequestError
 from .crypto import (
     a32_to_base64, encrypt_key, base64_url_encode, encrypt_attr, base64_to_a32,
     base64_url_decode, decrypt_attr, a32_to_str, get_chunks, str_to_a32,
-    decrypt_key, mpi_to_int, stringhash, prepare_key, make_id, makebyte
+    decrypt_key, mpi_to_int, stringhash, prepare_key, make_id, makebyte,
+    modular_inverse
 )
 
 logger = logging.getLogger(__name__)
@@ -119,22 +121,39 @@ class Mega:
             )
 
             private_key = a32_to_str(rsa_private_key)
-            self.rsa_private_key = [0, 0, 0, 0]
+            # The private_key contains 4 MPI integers concatenated together.
+            rsa_private_key = [0, 0, 0, 0]
             for i in range(4):
-                l = int(
-                    ((private_key[0]) * 256 + (private_key[1]) + 7) / 8
-                ) + 2
-                self.rsa_private_key[i] = mpi_to_int(private_key[:l])
-                private_key = private_key[l:]
+                # An MPI integer has a 2-byte header which describes the number
+                # of bits in the integer.
+                bitlength = (private_key[0] * 256) + private_key[1]
+                bytelength = math.ceil(bitlength / 8)
+                # Add 2 bytes to accommodate the MPI header
+                bytelength += 2
+                rsa_private_key[i] = mpi_to_int(private_key[:bytelength])
+                private_key = private_key[bytelength:]
+
+            first_factor_p = rsa_private_key[0]
+            second_factor_q = rsa_private_key[1]
+            private_exponent_d = rsa_private_key[2]
+            # In MEGA's webclient javascript, they assign [3] to a variable
+            # called u, but I do not see how it corresponds to pycryptodome's
+            # RSA.construct and it does not seem to be necessary.
+            rsa_modulus_n = first_factor_p * second_factor_q
+            phi = (first_factor_p - 1) * (second_factor_q - 1)
+            public_exponent_e = modular_inverse(private_exponent_d, phi)
+
+            rsa_components = (
+                rsa_modulus_n,
+                public_exponent_e,
+                private_exponent_d,
+                first_factor_p,
+                second_factor_q,
+            )
+            rsa_decrypter = RSA.construct(rsa_components)
 
             encrypted_sid = mpi_to_int(base64_url_decode(resp['csid']))
-            rsa_decrypter = RSA.construct(
-                (
-                    self.rsa_private_key[0] * self.rsa_private_key[1], 257,
-                    self.rsa_private_key[2], self.rsa_private_key[0],
-                    self.rsa_private_key[1]
-                )
-            )
+
             sid = '%x' % rsa_decrypter._decrypt(encrypted_sid)
             sid = binascii.unhexlify('0' + sid if len(sid) % 2 else sid)
             self.sid = base64_url_encode(sid[:43])
