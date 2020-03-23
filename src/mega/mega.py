@@ -303,9 +303,8 @@ class Mega:
             if foldername != '':
                 for file in files.items():
                     if (
-                        file[1]['a'] and
-                        file[1]['t'] and
-                        file[1]['a']['n'] == foldername
+                        file[1]['a'] and file[1]['t']
+                        and file[1]['a']['n'] == foldername
                     ):
                         if parent_desc == file[1]['p']:
                             parent_desc = file[0]
@@ -333,23 +332,20 @@ class Mega:
                     parent_dir_name, files=files
                 )
                 if (
-                    filename and parent_node_id and
-                    file[1]['a'] and file[1]['a']['n'] == filename and
-                    parent_node_id == file[1]['p']
+                    filename and parent_node_id and file[1]['a']
+                    and file[1]['a']['n'] == filename
+                    and parent_node_id == file[1]['p']
                 ):
                     if (
-                        exclude_deleted and
-                        self._trash_folder_node_id == file[1]['p']
+                        exclude_deleted
+                        and self._trash_folder_node_id == file[1]['p']
                     ):
                         continue
                     return file
-            if (
-                filename and
-                file[1]['a'] and file[1]['a']['n'] == filename
-            ):
+            if (filename and file[1]['a'] and file[1]['a']['n'] == filename):
                 if (
-                    exclude_deleted and
-                    self._trash_folder_node_id == file[1]['p']
+                    exclude_deleted
+                    and self._trash_folder_node_id == file[1]['p']
                 ):
                     continue
                 return file
@@ -598,13 +594,13 @@ class Mega:
 
     def _export_file(self, node):
         node_data = self._node_data(node)
-        self._api_request([
-            {
+        self._api_request(
+            [{
                 'a': 'l',
                 'n': node_data['h'],
                 'i': self.request_id
-            }
-        ])
+            }]
+        )
         return self.get_link(node)
 
     def export(self, path=None, node_id=None):
@@ -627,7 +623,9 @@ class Mega:
 
         master_key_cipher = AES.new(a32_to_str(self.master_key), AES.MODE_ECB)
         ha = base64_url_encode(
-            master_key_cipher.encrypt(node_data['h'].encode("utf8") + node_data['h'].encode("utf8"))
+            master_key_cipher.encrypt(
+                node_data['h'].encode("utf8") + node_data['h'].encode("utf8")
+            )
         )
 
         share_key = secrets.token_bytes(16)
@@ -745,7 +743,9 @@ class Mega:
             aes = AES.new(k_str, AES.MODE_CTR, counter=counter)
 
             mac_str = '\0' * 16
-            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str.encode("utf8"))
+            mac_encryptor = AES.new(
+                k_str, AES.MODE_CBC, mac_str.encode("utf8")
+            )
             iv_str = a32_to_str([iv[0], iv[1], iv[0], iv[1]])
 
             for chunk_start, chunk_size in get_chunks(file_size):
@@ -808,7 +808,9 @@ class Mega:
             completion_file_handle = None
 
             mac_str = '\0' * 16
-            mac_encryptor = AES.new(k_str, AES.MODE_CBC, mac_str.encode("utf8"))
+            mac_encryptor = AES.new(
+                k_str, AES.MODE_CBC, mac_str.encode("utf8")
+            )
             iv_str = a32_to_str([ul_key[4], ul_key[5], ul_key[4], ul_key[5]])
             if file_size > 0:
                 for chunk_start, chunk_size in get_chunks(file_size):
