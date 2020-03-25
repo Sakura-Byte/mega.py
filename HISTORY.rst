@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.0.7 (unreleased)
+1.0.7 (2020-03-25)
 ------------------
 
 - Fix login by calculating public RSA exponent instead of hardcoding.
