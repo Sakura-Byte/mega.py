@@ -11,7 +11,7 @@ Mega.py
 
 |Build Status| |Downloads|
 
-Python library for the Mega.co.nz API, currently supporting:
+Python library for the `Mega.co.nz <https://mega.nz/aff=Zo6IxNaHw14>`_ API, currently supporting:
 
 -  login
 -  uploading
@@ -29,6 +29,14 @@ For more detailed information see API_INFO.md
 How To Use
 ----------
 
+.. _create-mega-account:
+
+Create a Mega account
+~~~~~~~~~~~~~~~~~~~~~~~
+
+First, `create an account with Mega <https://mega.nz/aff=Zo6IxNaHw14>`_
+.
+
 .. _install-megapy-package:
 
 Install mega.py package
@@ -36,7 +44,7 @@ Install mega.py package
 
 .. code:: python
 
-   #Run the following command, or run setup from the latest github source
+   Run the following command, or run setup from the latest github source
    pip install mega.py
 
 .. _import-megapy:
