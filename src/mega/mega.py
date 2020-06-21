@@ -174,24 +174,41 @@ class Mega:
             data = [data]
 
         url = f'{self.schema}://g.api.{self.domain}/cs'
-        req = requests.post(
+        response = requests.post(
             url,
             params=params,
             data=json.dumps(data),
             timeout=self.timeout,
         )
-        json_resp = json.loads(req.text)
-        if isinstance(json_resp, int):
-            if json_resp == -3:
+        json_resp = json.loads(response.text)
+        try:
+            if isinstance(json_resp, list):
+                int_resp = json_resp[0] if isinstance(
+                    json_resp[0], int
+                ) else None
+            elif isinstance(json_resp, int):
+                int_resp = json_resp
+        except IndexError:
+            int_resp = None
+        if int_resp is not None:
+            if int_resp == -3:
                 msg = 'Request failed, retrying'
                 logger.info(msg)
                 raise RuntimeError(msg)
-            raise RequestError(json_resp)
+            raise RequestError(int_resp)
         return json_resp[0]
 
     def _parse_url(self, url):
-        # parse file id and key from url
-        if '!' in url:
+        """Parse file id and key from url."""
+        if '/file/' in url:
+            # V2 URL structure
+            url = url.replace(' ', '')
+            file_id = re.findall(r'\W\w\w\w\w\w\w\w\w\W', url)[0][1:-1]
+            id_index = re.search(file_id, url).end()
+            key = url[id_index + 1:]
+            return f'{file_id}!{key}'
+        elif '!' in url:
+            # V1 URL structure
             match = re.findall(r'/#!(.*)', url)
             path = match[0]
             return path
@@ -874,9 +891,12 @@ class Mega:
             # update attributes
             data = self._api_request(
                 {
-                    'a': 'p',
-                    't': dest,
-                    'i': self.request_id,
+                    'a':
+                    'p',
+                    't':
+                    dest,
+                    'i':
+                    self.request_id,
                     'n': [
                         {
                             'h': completion_file_handle,
@@ -902,8 +922,10 @@ class Mega:
         # update attributes
         data = self._api_request(
             {
-                'a': 'p',
-                't': parent_node_id,
+                'a':
+                'p',
+                't':
+                parent_node_id,
                 'n': [
                     {
                         'h': 'xxxxxxxx',
@@ -912,7 +934,8 @@ class Mega:
                         'k': encrypted_key
                     }
                 ],
-                'i': self.request_id
+                'i':
+                self.request_id
             }
         )
         return data
@@ -1102,8 +1125,10 @@ class Mega:
         encrypted_name = base64_url_encode(encrypt_attr({'n': dest_name}, k))
         return self._api_request(
             {
-                'a': 'p',
-                't': dest_node['h'],
+                'a':
+                'p',
+                't':
+                dest_node['h'],
                 'n': [
                     {
                         'ph': file_handle,

@@ -6,17 +6,16 @@ class ValidationError(Exception):
 
 
 _CODE_TO_DESCRIPTIONS = {
+    0: ('UNKNOWN', 'API Returned 0'),
     -1: (
-        'EINTERNAL',
-        (
+        'EINTERNAL', (
             'An internal error has occurred. Please submit a bug report, '
             'detailing the exact circumstances in which this error occurred'
         )
     ),
     -2: ('EARGS', 'You have passed invalid arguments to this command'),
     -3: (
-        'EAGAIN',
-        (
+        'EAGAIN', (
             '(always at the request level) A temporary congestion or server '
             'malfunction prevented your request from being processed. '
             'No data was altered. Retry. Retries must be spaced with '
@@ -24,8 +23,7 @@ _CODE_TO_DESCRIPTIONS = {
         )
     ),
     -4: (
-        'ERATELIMIT',
-        (
+        'ERATELIMIT', (
             'You have exceeded your command weight per time quota. Please '
             'wait a few seconds, then try again (this should never happen '
             'in sane real-life applications)'
@@ -37,15 +35,13 @@ _CODE_TO_DESCRIPTIONS = {
         'Too many concurrent IP addresses are accessing this upload target URL'
     ),
     -7: (
-        'ERANGE',
-        (
+        'ERANGE', (
             'The upload file packet is out of range or not starting and '
             'ending on a chunk boundary'
         )
     ),
     -8: (
-        'EEXPIRED',
-        (
+        'EEXPIRED', (
             'The upload target URL you are trying to access has expired. '
             'Please request a fresh one'
         )
