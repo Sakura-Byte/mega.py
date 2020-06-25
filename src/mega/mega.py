@@ -325,22 +325,25 @@ class Mega:
         parent_dir_name = path.parent.name
         for file in list(files.items()):
             parent_node_id = None
-            if parent_dir_name:
-                parent_node_id = self.find_path_descriptor(parent_dir_name,
-                                                           files=files)
-                if (filename and parent_node_id and file[1]['a']
-                        and file[1]['a']['n'] == filename
-                        and parent_node_id == file[1]['p']):
+            try:
+                if parent_dir_name:
+                    parent_node_id = self.find_path_descriptor(parent_dir_name,
+                                                               files=files)
+                    if (filename and parent_node_id and file[1]['a']
+                            and file[1]['a']['n'] == filename
+                            and parent_node_id == file[1]['p']):
+                        if (exclude_deleted and self._trash_folder_node_id
+                                == file[1]['p']):
+                            continue
+                        return file
+                elif (filename and file[1]['a']
+                      and file[1]['a']['n'] == filename):
                     if (exclude_deleted
                             and self._trash_folder_node_id == file[1]['p']):
                         continue
                     return file
-            elif (filename and file[1]['a']
-                    and file[1]['a']['n'] == filename):
-                if (exclude_deleted
-                        and self._trash_folder_node_id == file[1]['p']):
-                    continue
-                return file
+            except TypeError:
+                continue
 
     def get_files(self):
         logger.info('Getting all files...')

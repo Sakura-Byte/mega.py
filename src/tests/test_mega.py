@@ -155,7 +155,6 @@ class TestFind:
         # Check that the correct test.py was found
         assert file1 != file2
 
-
     def test_path_not_found_returns_none(self, mega):
         assert mega.find('not_found') is None
 
