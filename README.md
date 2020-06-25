@@ -164,6 +164,5 @@ m.rename(file, 'my_file.doc')
 ## Contact Support
 
 For paid priority support contact [mega@odwyer.software](mailto:mega@odwyer.software).
+
 **[UK Python Development Agency](https://odwyer.software/)**
-
-
