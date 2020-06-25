@@ -6,7 +6,6 @@ class ValidationError(Exception):
 
 
 _CODE_TO_DESCRIPTIONS = {
-    0: ('UNKNOWN', 'API Returned 0'),
     -1: (
         'EINTERNAL', (
             'An internal error has occurred. Please submit a bug report, '

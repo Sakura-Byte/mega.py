@@ -20,27 +20,25 @@ with open('README.rst', 'r', encoding='utf-8') as rm_file:
 with open('HISTORY.rst', 'r', encoding='utf-8') as hist_file:
     history = hist_file.read()
 
-setup(
-    name='mega.py',
-    version='1.0.7',
-    packages=find_packages('src', exclude=('tests', )),
-    package_dir={'': 'src'},
-    include_package_data=True,
-    zip_safe=False,
-    description='Python lib for the Mega.co.nz API',
-    long_description=readme + '\n\n' + history,
-    author='Richard O\'Dwyer',
-    author_email='richard@richard.do',
-    license='Creative Commons Attribution-Noncommercial-Share Alike license',
-    install_requires=install_requires,
-    classifiers=[
-        'Intended Audience :: Developers',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Topic :: Internet :: WWW/HTTP',
-    ]
-)
+setup(name='mega.py',
+      version='1.0.7',
+      packages=find_packages('src', exclude=('tests', )),
+      package_dir={'': 'src'},
+      include_package_data=True,
+      zip_safe=False,
+      description='Python lib for the Mega.co.nz API',
+      long_description=readme + '\n\n' + history,
+      author='Richard O\'Dwyer',
+      author_email='richard@richard.do',
+      license='Creative Commons Attribution-Noncommercial-Share Alike license',
+      install_requires=install_requires,
+      classifiers=[
+          'Intended Audience :: Developers',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Topic :: Internet :: WWW/HTTP',
+      ])

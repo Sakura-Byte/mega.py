@@ -1,4 +1,5 @@
 import os
+import uuid
 from mega import Mega
 
 
@@ -8,7 +9,7 @@ def test():
     comment/uncomment lines to test various parts of the API
     see readme.md for more information
     """
-
+    unique = str(uuid.uuid4())
     # user details
     email = os.environ['EMAIL']
     password = os.environ['PASS']
@@ -36,10 +37,11 @@ def test():
         print((files[file]))
 
     # upload file
-    print((m.upload('examples.py')))
+    print((m.upload(filename='examples.py',
+                    dest_filename=f'examples_{unique}.py')))
 
     # search for a file in account
-    file = m.find('examples.py')
+    file = m.find(f'examples_{unique}.py')
 
     if file:
         # get public link
