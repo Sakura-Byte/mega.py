@@ -1,7 +1,7 @@
 Release History
 ===============
 
-1.0.8 (unreleased)
+1.0.8 (2020-06-25)
 ------------------
 
 -   Fixes find method returning the wrong file when more than one file
