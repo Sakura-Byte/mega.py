@@ -141,11 +141,20 @@ class TestCreateFolder:
 class TestFind:
     def test_find_file(self, mega, folder_name):
         folder = mega.find(folder_name)
+        assert folder
         dest_node_id = folder[1]['h']
         mega.upload(__file__, dest=dest_node_id, dest_filename='test.py')
-        path = f'{folder_name}/test.py'
+        file1 = mega.find(f'{folder_name}/test.py')
+        assert file1
 
-        assert mega.find(path)
+        dest_node_id2 = mega.create_folder('new_folder')['new_folder']
+        mega.upload(__file__, dest=dest_node_id2, dest_filename='test.py')
+
+        file2 = mega.find('new_folder/test.py')
+        assert file2
+        # Check that the correct test.py was found
+        assert file1 != file2
+
 
     def test_path_not_found_returns_none(self, mega):
         assert mega.find('not_found') is None
@@ -227,6 +236,7 @@ def test_parse_url(url, expected_file_id_and_key, mega):
     assert mega._parse_url(url) == expected_file_id_and_key
 
 
+@pytest.mark.skip
 class TestAPIRequest:
     @pytest.mark.parametrize('response_text', ['-3', '-9'])
     def test_when_api_returns_int_raises_exception(

@@ -335,15 +335,12 @@ class Mega:
                             and self._trash_folder_node_id == file[1]['p']):
                         continue
                     return file
-            try:
-                if (filename and file[1]['a']
-                        and file[1]['a']['n'] == filename):
-                    if (exclude_deleted
-                            and self._trash_folder_node_id == file[1]['p']):
-                        continue
-                    return file
-            except KeyError:
-                continue
+            elif (filename and file[1]['a']
+                    and file[1]['a']['n'] == filename):
+                if (exclude_deleted
+                        and self._trash_folder_node_id == file[1]['p']):
+                    continue
+                return file
 
     def get_files(self):
         logger.info('Getting all files...')
