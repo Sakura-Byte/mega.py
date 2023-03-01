@@ -1,3 +1,13 @@
+This library is no longer maintained, you should instead use the official CLI client MEGAcmd:
+
+Download it: https://mega.io/cmd#downloadapps
+
+Learn how to use it: https://github.com/meganz/MEGAcmd/blob/master/UserGuide.md
+
+
+----
+
+
 Mega.py
 =======
 
