@@ -1106,15 +1106,15 @@ class Mega:
                            dest_node=None,
                            dest_name=None,
                            dest_node_str=None,
-                           attr_encrypted=None):
+                           attr_with_name=None):
         """
         Import the public file into user account
         """
         if dest_node_str is None:
-            if dest_node is not None:
-                dest_node = self.get_node_by_type(2)[1]
+            if dest_node is None:
+                dest_node_str = self.get_node_by_type(2)[1]["h"]
             else:
-                dest_node = dest_node["h"]
+                dest_node_str = dest_node["h"]
 
         # Providing dest_name spares an API call to retrieve it.
         if dest_name is None:
@@ -1126,11 +1126,8 @@ class Mega:
              key[3] ^ key[7])
 
         encrypted_key = a32_to_base64(encrypt_key(key, self.master_key))
-        if encrypted_name is None:
-            if attr_encrypted is None:
-                encrypted_name = base64_url_encode(encrypt_attr({'n': dest_name}, k))
-            else:
-                encrypted_name = attr_encrypted
+        if attr_with_name is None:
+            attr_with_name = base64_url_encode(encrypt_attr({'n': dest_name}, k))
 
         return self._api_request({
             'a':
@@ -1140,7 +1137,7 @@ class Mega:
             'n': [{
                 'ph': file_handle,
                 't': 0,
-                'a': encrypted_name,
+                'a': attr_with_name,
                 'k': encrypted_key
             }]
         })
