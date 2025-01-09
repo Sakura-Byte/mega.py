@@ -1,4 +1,4 @@
-This library is no longer maintained, you should instead use the official CLI client MEGAcmd:
+(https://github.com/Sakura-Byte) maintain this library. Besides, you can use the official CLI client MEGAcmd:
 
 Download it: https://mega.io/cmd#downloadapps
 
@@ -43,7 +43,7 @@ First, [create an account with Mega](https://mega.nz/aff=Zo6IxNaHw14) .
 Run the following command, or run setup from the latest github source.
 
 ```python
-pip install mega.py
+pip install git+https://github.com/Sakura-Byte/mega.py.git
 ```
 
 ### Import mega.py
