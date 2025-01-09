@@ -1,4 +1,4 @@
-[(https://github.com/Sakura-Byte) maintain this library. Besides, you can use the official CLI client MEGAcmd:
+[(https://github.com/Sakura-Byte)] maintain this library. Besides, you can use the official CLI client MEGAcmd:
 
 Download it: https://mega.io/cmd#downloadapps
 
